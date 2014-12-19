@@ -4,7 +4,7 @@ VXPromotionViewController is a simple inline and cross promotion display for you
 It can load the app information from the Apple AppStore or from your own JSON source.
 You can specify specific apps or load available apps for a publisher.
 
-![VXPromotionViewController](http://cl.ly/SQVO/download/GitHub.png)
+![VXPromotionViewController](http://www.swift.ch/images/background.jpg)
 
 **VXPromotionViewController features:**
 
