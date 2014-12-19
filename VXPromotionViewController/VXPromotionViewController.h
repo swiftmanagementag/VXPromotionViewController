@@ -8,10 +8,10 @@
 
 @interface VXPromotionViewController : UITableViewController
 
-- (instancetype)initWithApps:(NSArray*)pApps;
+@property (nonatomic, strong) NSString *appID;
 
+
+- (instancetype)initWithArrayOfAppIDs:(NSArray*)pApps;
 - (instancetype)initWithAddress:(NSString*)urlString;
-- (instancetype)initWithURL:(NSURL*)URL;
-- (instancetype)initWithURLRequest:(NSURLRequest *)request;
 
 @end

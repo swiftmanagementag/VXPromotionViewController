@@ -1,13 +1,17 @@
+@version = "1.0.0"
+
 Pod::Spec.new do |s|
   s.name         	= 'VXPromotionViewController'
-  s.version      	= '1.0'
+  s.version      	= @version
   s.summary     	= 'A simple display of promoted apps.'
-  s.homepage 	   	= 'http://www.swift.ch'
-  s.license      	= 'MIT'
+  s.homepage 	   	= 'https://github.com/swiftmanagementag/VXPromotionViewController'
+  s.license			= { :type => 'MIT', :file => 'LICENSE' }
   s.author       	= { 'Graham Lancashire' => 'lancashire@swift.ch' }
   s.source       	= { :git => 'https://github.com/swiftmanagementag/VXPromotionViewController.git', :tag => s.version.to_s }
   s.platform     	= :ios, '7.0'
   s.source_files 	= 'VXPromotionViewController/**/*.{h,m}'
-  s.resources 		= 'VXPromotionViewController/**/*.{bundle,png,lproj}'
+  s.frameworks		= 'StoreKit', 'CoreImage'
+  s.resources 		= 'VXPromotionViewController/**/*.{bundle,xib,png,lproj}'
   s.requires_arc 	= true
+# s.dependency 'PSTCollectionView', '>= 1.1.0'
 end

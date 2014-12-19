@@ -10,21 +10,22 @@
 #import "VXPromotionViewController.h"
 #import "VXPromotionModalViewController.h"
 
+
 @implementation ViewController
 
 
-- (void)pushWebViewController {
-    NSURL *URL = [NSURL URLWithString:@"http://swift.ch"];
-	VXPromotionViewController *webViewController = [[VXPromotionViewController alloc] initWithURL:URL];
-	[self.navigationController pushViewController:webViewController animated:YES];
+- (void)pushViewController {
+	VXPromotionViewController *promoViewController = [[VXPromotionViewController alloc] initWithArrayOfAppIDs:@[@"499346672", @"450499218", @"742018969"]];
+	promoViewController.appID = @"499346672";
+	[self.navigationController pushViewController:promoViewController animated:YES];
 }
 
 
-- (void)presentWebViewController {
-	NSURL *URL = [NSURL URLWithString:@"http://swift.ch"];
-	VXPromotionModalViewController *webViewController = [[VXPromotionModalViewController alloc] initWithURL:URL];
-	webViewController.modalPresentationStyle = UIModalPresentationPageSheet;
-    [self presentViewController:webViewController animated:YES completion:NULL];
+- (void)presentViewController {
+	VXPromotionModalViewController *promoViewController = [[VXPromotionModalViewController alloc] initWithAddress:@"http://www.swift.ch/api/ch/de"];
+	promoViewController.modalPresentationStyle = UIModalPresentationPageSheet;
+	promoViewController.appID = @"499346672";
+    [self presentViewController:promoViewController animated:YES completion:NULL];
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {

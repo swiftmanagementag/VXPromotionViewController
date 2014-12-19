@@ -1,6 +1,8 @@
 # VXPromotionViewController
 
-VXPromotionViewController is a simple inline promotion display for your iOS 7 app.
+VXPromotionViewController is a simple inline and cross promotion display for your iOS 7 app.
+It can load the app information from the Apple AppStore or from your own JSON source.
+You can specify specific apps or load available apps for a publisher.
 
 ![VXPromotionViewController](http://cl.ly/SQVO/download/GitHub.png)
 
@@ -26,23 +28,21 @@ If you want to use VXPromotionViewController with CocoaPods
 (see sample Xcode project in `/Demo`)
 
 Just like any UIViewController, VXPromotionViewController can be pushed into a UINavigationController stack:
+If you specify your app id, a rating and share button is displayed
 
 ```objective-c
-VXPromotionViewController *promoViewController = [[VXPromotionViewController alloc] initWithAddress:@"http://google.com"];
+VXPromotionViewController *promoViewController = [[VXPromotionViewController alloc] initWithAddress:@"http://www.swift.ch/api/ch/de"];
+promoViewController.appID = @"499346672";
 [self.navigationController pushViewController:promoViewController animated:YES];
 ```
 
 It can also be presented modally using `VXPromotionModalViewController`:
 
 ```objective-c
-VXPromotionModalViewController *promoViewController = [[VXPromotionModalViewController alloc] initWithAddress:@"http://google.com"];
+VXPromotionModalViewController *promoViewController = [[VXPromotionModalViewController alloc] initWithArrayOfAppIDs:@[@"499346672", @"450499218", @"742018969"]];
+promoViewController.appID = @"499346672";
 [self presentViewController:promoViewController animated:YES completion:NULL];
 ```
-
-### VXPromotionViewControllerActivity
-
-Starting in iOS 6 Apple uses `UIActivity` to let you show additional sharing methods in share sheets. `VXPromotionViewController` comes with "Open in Safari" and "Open in Chrome" activities. You can easily add your own activity by subclassing `VXPromotionViewControllerActivity` which takes care of a few things automatically for you. Have a look at the Safari and Chrome activities for implementation examples. 
-
 
 ## Credits
 

@@ -18,6 +18,8 @@
 @interface VXPromotionViewController (DoneButton)
 
 - (void)doneButtonTapped:(id)sender;
+- (void)rateButtonTapped:(id)sender;
+- (void)shareButtonTapped:(id)sender;
 
 @end
 
@@ -28,19 +30,12 @@
 
 
 - (instancetype)initWithAddress:(NSString*)urlString {
-    return [self initWithURL:[NSURL URLWithString:urlString]];
-}
-
-- (instancetype)initWithURL:(NSURL *)URL {
-    return [self initWithURLRequest:[NSURLRequest requestWithURL:URL]];
-}
-
-- (instancetype)initWithURLRequest:(NSURLRequest *)request {
-    self.promoViewController = [[VXPromotionViewController alloc] initWithURLRequest:request];
+	self.promoViewController = [[VXPromotionViewController alloc] initWithAddress:urlString];
 	return [self initController];
 }
-- (instancetype)initWithApps:(NSArray *)pApps {
-	self.promoViewController = [[VXPromotionViewController alloc] initWithApps:pApps];
+
+- (instancetype)initWithArrayOfAppIDs:(NSArray *)pApps {
+	self.promoViewController = [[VXPromotionViewController alloc] initWithArrayOfAppIDs:pApps];
 	
 	return [self initController];
 	
@@ -51,11 +46,7 @@
 		UIBarButtonItem *doneButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone
 																					target:self.promoViewController
 																					action:@selector(doneButtonTapped:)];
-		
-		if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
-			self.promoViewController.navigationItem.leftBarButtonItem = doneButton;
-		else
-			self.promoViewController.navigationItem.rightBarButtonItem = doneButton;
+		self.promoViewController.navigationItem.leftBarButtonItem = doneButton;
 	}
 	return self;
 }
@@ -66,4 +57,16 @@
     self.navigationBar.tintColor = self.barsTintColor;
 }
 
+-(void)setAppID:(NSString *)appID {
+	if(self.promoViewController) {
+		self.promoViewController.appID = appID;
+	}
+}
+-(NSString *)appID {
+	if(self.promoViewController) {
+		return self.promoViewController.appID;
+	} else {
+		return nil;
+	}
+}
 @end

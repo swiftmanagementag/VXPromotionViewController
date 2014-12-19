@@ -10,7 +10,7 @@
 
 @interface ViewController : UIViewController
 
-- (IBAction)pushWebViewController;
-- (IBAction)presentWebViewController;
+- (IBAction)pushViewController;
+- (IBAction)presentViewController;
 
 @end

@@ -10,11 +10,9 @@
 
 @interface VXPromotionModalViewController : UINavigationController
 
-- (instancetype)initWithApps:(NSArray*)pApps;
+- (instancetype)initWithArrayOfAppIDs:(NSArray*)pApps;
 - (instancetype)initWithAddress:(NSString*)urlString;
-- (instancetype)initWithURL:(NSURL *)URL;
-- (instancetype)initWithURLRequest:(NSURLRequest *)request;
 
 @property (nonatomic, strong) UIColor *barsTintColor;
-
+@property (nonatomic, strong) NSString *appID;
 @end

@@ -6,17 +6,19 @@
 //
 //  https://github.com/swiftmanagementag/VXPromotionViewController
 
-#import "VXPromotionViewControllerActivityChrome.h"
-#import "VXPromotionViewControllerActivitySafari.h"
 #import "VXPromotionViewController.h"
+#import "VXPromotionApp.h"
+#import <StoreKit/StoreKit.h>
 
-@interface VXPromotionViewController () <UIWebViewDelegate>
+@interface VXPromotionViewController () <SKStoreProductViewControllerDelegate, VXDownloadDelegate>
 
-@property (nonatomic, strong) UIBarButtonItem *actionBarButtonItem;
 
-@property (nonatomic, strong) NSURLRequest *request;
+@property (nonatomic, strong) NSString *address;
 
-@property (nonatomic, strong) NSArray *apps;
+@property (nonatomic, strong) NSMutableArray *apps;
+@property (nonatomic, strong) NSMutableDictionary *appsLoaded;
+@property (nonatomic, strong) NSMutableDictionary *appsImages;
+@property (nonatomic, strong) UIPopoverController *popover;
 
 @end
 
@@ -25,85 +27,110 @@
 
 #pragma mark - Initialization
 
-- (void)dealloc {
-    [self.webView stopLoading];
- 	[[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
-    self.webView.delegate = nil;
-}
-
 - (instancetype)initWithAddress:(NSString *)urlString {
-    return [self initWithURL:[NSURL URLWithString:urlString]];
-}
-
-- (instancetype)initWithURL:(NSURL*)pageURL {
-    return [self initWithURLRequest:[NSURLRequest requestWithURL:pageURL]];
-}
-
-- (instancetype)initWithURLRequest:(NSURLRequest*)request {
-    self = [super init];
-    if (self) {
-        self.request = request;
-    }
-    return self;
-}
-- (instancetype)initWithApps:(NSArray*)pApps {
 	self = [super init];
 	if (self) {
-		self.apps = pApps;
+		self.address = urlString;
 	}
 	return self;
 }
-- (void)loadRequest:(NSURLRequest*)request {
-    [self.webView loadRequest:request];
+
+- (instancetype)initWithArrayOfAppIDs:(NSArray*)pApps {
+	self = [super init];
+	if (self) {
+		self.apps = [pApps mutableCopy];
+	}
+	return self;
+}
+
+- (void)dealloc {
+	[[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
 }
 
 #pragma mark - View lifecycle
-
-- (void)loadView {
-    self.view = self.webView;
-    [self loadRequest:self.request];
-}
-
 - (void)viewDidLoad {
 	[super viewDidLoad];
-    [self updateToolbarItems];
-}
+	
+	// initialise holding arrays
+	self.appsLoaded = [[NSMutableDictionary alloc] init];
+	self.appsImages = [[NSMutableDictionary alloc] init];
 
-- (void)viewDidUnload {
-    [super viewDidUnload];
-    self.webView = nil;
-    _backBarButtonItem = nil;
-    _forwardBarButtonItem = nil;
-    _refreshBarButtonItem = nil;
-    _stopBarButtonItem = nil;
-    _actionBarButtonItem = nil;
+	if(self.appID) {
+		UIBarButtonItem *rateButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"VXPromotionViewController.bundle/VXPromotionViewControllerRate"] style:UIBarButtonItemStylePlain
+																				target:self
+																				action:@selector(rateButtonTapped:)];
+		UIBarButtonItem *shareButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAction
+																				target:self
+																				action:@selector(shareButtonTapped:)];
+		self.navigationItem.rightBarButtonItems = @[shareButton,rateButton];
+	}
+	[self load];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
-    NSAssert(self.navigationController, @"VXPromotionViewController needs to be contained in a UINavigationController. If you are presenting VXPromotionViewController modally, use VXPromotionModalViewController instead.");
-    
-	[super viewWillAppear:animated];
+	NSAssert(self.navigationController, @"VXPromotionViewController needs to be contained in a UINavigationController. If you are presenting VXPromotionViewController modally, use VXPromotionModalViewController instead.");
 	
-    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone) {
-        [self.navigationController setToolbarHidden:NO animated:animated];
-    }
-    else if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
-        [self.navigationController setToolbarHidden:YES animated:animated];
-    }
-}
-
-- (void)viewWillDisappear:(BOOL)animated {
-    [super viewWillDisappear:animated];
-    
-    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone) {
-        [self.navigationController setToolbarHidden:YES animated:animated];
-    }
+	[super viewWillAppear:animated];
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
-    [super viewDidDisappear:animated];
-    [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
+	[[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
+	[super viewDidDisappear:animated];
 }
+
+
+- (void)load {
+	if(self.address) {
+		// initialise storage
+		self.apps = [NSMutableArray array];
+		// load apps from address - table is reloaded on completion
+		[VXPromotionApp downloadWithURL:self.address withDelegate:self];
+	} else if (self.apps) {
+		// load apps using string array
+		for(NSString* appID in self.apps) {
+			[VXPromotionApp download:appID withCountry:@"ch" withLanguage:@"de" withDelegate:self];
+		}
+		// reload table
+		[self.tableView reloadData];
+
+	}
+}
+-(void)downloadCompleteWithApps:(NSArray *)pApps {
+	if(pApps) {
+		BOOL reloadTable = NO;
+		
+		for (VXPromotionApp *app in pApps) {
+			// app id should be a string
+			NSString *appID = [NSString stringWithFormat:@"%@", app.productID ];
+
+			// filter our your own app id
+			if(appID && (self.address == nil || self.appID == nil  || ![appID isEqualToString:self.appID])) {
+				// store app in cache
+				[self.appsLoaded setValue:app forKey:appID];
+				// check if the app exists in the apps array
+				long row = [self.apps indexOfObject:appID];
+		
+				if(row != NSNotFound) {
+					NSIndexPath *indexPath = [NSIndexPath indexPathForRow:row inSection:0];
+				
+					// update the correct row...
+					[self.tableView beginUpdates];
+					[self.tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationBottom];
+					[self.tableView endUpdates];
+				} else {
+					reloadTable = YES;
+					[self.apps addObject:appID];
+				}
+			}
+		}
+		if(reloadTable ){
+			[self.tableView reloadData];
+		}
+		   
+	}
+	
+}
+
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation {
     if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
@@ -112,94 +139,72 @@
     return toInterfaceOrientation != UIInterfaceOrientationPortraitUpsideDown;
 }
 
-#pragma mark - Getters
-
-- (UIWebView*)webView {
-    if(!_webView) {
-        _webView = [[UIWebView alloc] initWithFrame:[UIScreen mainScreen].bounds];
-        _webView.delegate = self;
-        _webView.scalesPageToFit = YES;
-    }
-    return _webView;
-}
-
-- (UIBarButtonItem *)backBarButtonItem {
-    if (!_backBarButtonItem) {
-        _backBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"VXPromotionViewController.bundle/VXPromotionViewControllerBack"]
-                                                              style:UIBarButtonItemStylePlain
-                                                             target:self
-                                                             action:@selector(goBackTapped:)];
-		_backBarButtonItem.width = 18.0f;
-    }
-    return _backBarButtonItem;
-}
-
-- (UIBarButtonItem *)forwardBarButtonItem {
-    if (!_forwardBarButtonItem) {
-        _forwardBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"VXPromotionViewController.bundle/VXPromotionViewControllerNext"]
-                                                                 style:UIBarButtonItemStylePlain
-                                                                target:self
-                                                                action:@selector(goForwardTapped:)];
-		_forwardBarButtonItem.width = 18.0f;
-    }
-    return _forwardBarButtonItem;
-}
-
-- (UIBarButtonItem *)refreshBarButtonItem {
-    if (!_refreshBarButtonItem) {
-        _refreshBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemRefresh target:self action:@selector(reloadTapped:)];
-    }
-    return _refreshBarButtonItem;
-}
-
-- (UIBarButtonItem *)stopBarButtonItem {
-    if (!_stopBarButtonItem) {
-        _stopBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemStop target:self action:@selector(stopTapped:)];
-    }
-    return _stopBarButtonItem;
-}
-
-- (UIBarButtonItem *)actionBarButtonItem {
-    if (!_actionBarButtonItem) {
-        _actionBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAction target:self action:@selector(actionButtonTapped:)];
-    }
-    return _actionBarButtonItem;
-}
-
 #pragma mark Table view data source
-
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
-{
-	return _products.count;
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+	return 44.0f;
 }
--(void)configureCell:(HZStoreCell*)pCell withApp:(VXApp*)pApp {
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+	return self.apps.count;
+}
+
+-(void)configureCell:(UITableViewCell*)pCell withIndexPath:(NSIndexPath*)indexPath withApp:(VXPromotionApp*)pApp {
+	double margin = 4.0f;
+	double height = [self tableView:self.tableView heightForRowAtIndexPath:indexPath];
+
 	if(pApp && pApp.name) {
-		pCell.labelTitle.text = pApp.name;
-		pCell.labelDescription.text = pApp.description;
+		pCell.textLabel.text = pApp.name;
+		pCell.detailTextLabel.text = pApp.text;
 		
-		[pCell.iconView sd_setImageWithURL:[NSURL URLWithString:pApp.icon]  placeholderImage:[UIImage imageNamed:@"placeholder.png"]];
-		pCell.iconView.backgroundColor = [UIColor clearColor];
-		pCell.iconView.layer.cornerRadius = 12.0f;
-		pCell.iconView.layer.masksToBounds = YES;
+		if([self.appsImages objectForKey:pApp.icon]) {
+			[pCell.imageView setImage:[self.appsImages objectForKey:pApp.icon]];
+		} else {
+			[pCell.imageView setImage:[UIImage imageNamed:@"placeholder.png"]];
+			dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+				
+				UIImage *img = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:pApp.icon]]];
+
+				// Make a trivial (1x1) graphics context, and draw the image into it
+				CGSize imageSize = CGSizeMake(height - 2*margin,height - 2*margin);
+				UIGraphicsBeginImageContextWithOptions(imageSize, NO, UIScreen.mainScreen.scale);
+				
+				CGRect imageRect = CGRectMake(0.0, 0.0, imageSize.width, imageSize.height);
+				
+				[img drawInRect:imageRect];
+				UIImage *imageSized = UIGraphicsGetImageFromCurrentImageContext();
+				
+				UIGraphicsEndImageContext();
+			
+				// Now the image will have been loaded and decoded and is ready to rock for the main thread
+				dispatch_sync(dispatch_get_main_queue(), ^{
+					[pCell.imageView setImage:imageSized ?: img];
+					[pCell setNeedsLayout];
+					[pCell.imageView setNeedsDisplay];
+					[self.appsImages setValue:imageSized ?: img forKey:pApp.icon];
+				});
+			});
+		}
+		pCell.imageView.backgroundColor = [UIColor clearColor];
+		pCell.imageView.layer.cornerRadius = 2*margin;
+		pCell.imageView.layer.masksToBounds = YES;
+		pCell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
 		
-		pCell.shadowView.layer.cornerRadius = 12.0f;
-		pCell.shadowView.layer.masksToBounds = YES;
-		
-		[pCell.buttonPurchase setTitle:NSLocalizedString(@"ViewInAppStore", "ViewInAppStore") forState:UIControlStateNormal];
 	}
 };
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-	static NSString *CellIdentifier = @"StoreCell";
-	HZStoreCell *cell = (HZStoreCell*)[tableView dequeueReusableCellWithIdentifier:CellIdentifier];
+	static NSString *CellIdentifier = @"VXPromotionCell";
+	UITableViewCell *cell = (UITableViewCell*)[tableView dequeueReusableCellWithIdentifier:CellIdentifier];
+	
 	if (cell == nil) {
-		cell = [[HZStoreCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:CellIdentifier];
+		cell = [[	UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:CellIdentifier];
 	}
-	NSString *productID = [_products objectAtIndex:indexPath.row];
 	
-	VXApp *app = [_productsLoaded valueForKey:productID];
+	NSString *productID = [self.apps objectAtIndex:indexPath.row];
 	
-	[self configureCell:cell withApp:app];
+	VXPromotionApp *app = [self.appsLoaded valueForKey:productID];
+	
+	[self configureCell:cell withIndexPath:indexPath withApp:app];
 	
 	return cell;
 }
@@ -207,13 +212,15 @@
 #pragma mark Table view delegate
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-	NSString *productID = [_products objectAtIndex:indexPath.row];
-	//	itms-apps://itunes.apple.com/app/idAPP_ID
+#if TARGET_IPHONE_SIMULATOR
+	UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:[self.class description] message:@"Sorry, you cannot open the Storekit Controller in Simulator." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
 	
-	[HZAppDelegate track:[NSString stringWithFormat:@"Product Recommendation %@", productID]];
+	[alertView show];
+	return;
+#else
+	NSString *productID = [self.apps objectAtIndex:indexPath.row];
 	
-	
-	[[UINavigationBar appearance] setTintColor:[UIColor darkTextColor]];
+	//[[UINavigationBar appearance] setTintColor:[UIColor darkTextColor]];
 	SKStoreProductViewController *controller = [[SKStoreProductViewController alloc] init];
 	controller.delegate = self;
 	
@@ -226,133 +233,70 @@
 		}
 	}];
 	[tableView deselectRowAtIndexPath:[tableView indexPathForSelectedRow] animated:YES];
-	
-	
-	
-}
-
-#pragma mark - Toolbar
-
-- (void)updateToolbarItems {
-    self.backBarButtonItem.enabled = self.self.webView.canGoBack;
-    self.forwardBarButtonItem.enabled = self.self.webView.canGoForward;
-    
-    UIBarButtonItem *refreshStopBarButtonItem = self.self.webView.isLoading ? self.stopBarButtonItem : self.refreshBarButtonItem;
-    
-    UIBarButtonItem *fixedSpace = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:nil action:nil];
-    UIBarButtonItem *flexibleSpace = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
-    
-    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
-        CGFloat toolbarWidth = 250.0f;
-        fixedSpace.width = 35.0f;
-        
-        NSArray *items = [NSArray arrayWithObjects:
-                          fixedSpace,
-                          refreshStopBarButtonItem,
-                          fixedSpace,
-                          self.backBarButtonItem,
-                          fixedSpace,
-                          self.forwardBarButtonItem,
-                          fixedSpace,
-                          self.actionBarButtonItem,
-                          nil];
-        
-        UIToolbar *toolbar = [[UIToolbar alloc] initWithFrame:CGRectMake(0.0f, 0.0f, toolbarWidth, 44.0f)];
-        toolbar.items = items;
-        toolbar.barStyle = self.navigationController.navigationBar.barStyle;
-        toolbar.tintColor = self.navigationController.navigationBar.tintColor;
-        self.navigationItem.rightBarButtonItems = items.reverseObjectEnumerator.allObjects;
-    }
-    
-    else {
-        NSArray *items = [NSArray arrayWithObjects:
-                          fixedSpace,
-                          self.backBarButtonItem,
-                          flexibleSpace,
-                          self.forwardBarButtonItem,
-                          flexibleSpace,
-                          refreshStopBarButtonItem,
-                          flexibleSpace,
-                          self.actionBarButtonItem,
-                          fixedSpace,
-                          nil];
-        
-        self.navigationController.toolbar.barStyle = self.navigationController.navigationBar.barStyle;
-        self.navigationController.toolbar.tintColor = self.navigationController.navigationBar.tintColor;
-        self.toolbarItems = items;
-    }
-}
-
-#pragma mark - UIWebViewDelegate
-
-- (void)webViewDidStartLoad:(UIWebView *)webView {
-	[[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
-    [self updateToolbarItems];
-}
-
-
-- (void)webViewDidFinishLoad:(UIWebView *)webView {
-	[[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
-    
-    if (self.navigationItem.title == nil) {
-        self.navigationItem.title = [webView stringByEvaluatingJavaScriptFromString:@"document.title"];
-    }
-    
-    [self updateToolbarItems];
-}
-
-- (void)webView:(UIWebView *)webView didFailLoadWithError:(NSError *)error {
-	[[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
-    [self updateToolbarItems];
-}
-
-#pragma mark - Target actions
-
-- (void)goBackTapped:(UIBarButtonItem *)sender {
-    [self.webView goBack];
-}
-
-- (void)goForwardTapped:(UIBarButtonItem *)sender {
-    [self.webView goForward];
-}
-
-- (void)reloadTapped:(UIBarButtonItem *)sender {
-    [self.webView reload];
-}
-
-- (void)stopTapped:(UIBarButtonItem *)sender {
-    [self.webView stopLoading];
-	[self updateToolbarItems];
-}
-
-- (void)actionButtonTapped:(id)sender {
-    NSURL *url = self.webView.request.URL ? self.webView.request.URL : self.request.URL;
-    if (url != nil) {
-        NSArray *activities = @[[VXPromotionViewControllerActivitySafari new], [VXPromotionViewControllerActivityChrome new]];
-        
-        if ([[url absoluteString] hasPrefix:@"file:///"]) {
-            UIDocumentInteractionController *dc = [UIDocumentInteractionController interactionControllerWithURL:url];
-            [dc presentOptionsMenuFromRect:self.view.bounds inView:self.view animated:YES];
-        } else {
-            UIActivityViewController *activityController = [[UIActivityViewController alloc] initWithActivityItems:@[url] applicationActivities:activities];
-            
-#ifdef __IPHONE_8_0
-            if (floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_7_1 &&
-                UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
-            {
-                UIPopoverPresentationController *ctrl = activityController.popoverPresentationController;
-                ctrl.sourceView = self.view;
-                ctrl.barButtonItem = sender;
-            }
 #endif
-            
-            [self presentViewController:activityController animated:YES completion:nil];
-        }
-    }
+}
+#pragma mark - Actions
+- (void)doneButtonTapped:(id)sender {
+	[self dismissViewControllerAnimated:YES completion:nil];
 }
 
-- (void)doneButtonTapped:(id)sùender {
-    [self dismissViewControllerAnimated:YES completion:NULL];
+- (void)rateButtonTapped:(id)sender {
+#if TARGET_IPHONE_SIMULATOR
+	UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:[self.class description] message:@"Sorry, you cannot open the Storekit Controller in Simulator." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
+	
+	[alertView show];
+	return;
+#else
+	
+	SKStoreProductViewController *controller = [[SKStoreProductViewController alloc] init];
+	[controller loadProductWithParameters:@{SKStoreProductParameterITunesItemIdentifier:self.appID} completionBlock:^(BOOL result, NSError *error) {
+		if (error) {
+			NSLog(@"Error %@ with User Info %@.", error, [error userInfo]);
+		} else {
+			// Present Store Product View Controller
+			[self presentViewController:controller animated:YES completion:nil];
+		}
+	}];
+#endif
+}
+- (void)shareButtonTapped:(id)sender {
+	NSString *url = [NSString stringWithFormat:@"http://itunes.apple.com/WebObjects/MZStore.woa/wa/viewSoftware?id=&id=%@", self.appID];
+	NSURL *urlToShare = [NSURL URLWithString:url];
+	
+	NSString *textToShare = NSLocalizedString(@"VXPromotionShareTemplateCustom", nil);
+	
+	if(textToShare == nil) {
+		textToShare = NSLocalizedStringFromTable(@"VXPromotionShareTemplate", @"VXPromotionViewController", nil);
+	}
+	
+	NSMutableArray *activityItems = [@[textToShare, urlToShare] mutableCopy];
+	
+	UIImage *imageToShare = nil;
+	
+	for(NSString *imageName in @[@"Icon@2x", @"Icon", @"Icon-60", @"Icon-76", @"Icon-60@2x", @"logo.png"]) {
+		imageToShare = [UIImage imageNamed:imageName];
+		if(imageToShare != nil) {
+			break;
+		}
+	}
+		
+	if(imageToShare != nil) {
+		[activityItems addObject:imageToShare];
+	}
+	
+	UIActivityViewController *activityVC = [[UIActivityViewController alloc] initWithActivityItems:activityItems  applicationActivities:nil];
+	activityVC.excludedActivityTypes = @[UIActivityTypePostToWeibo,  UIActivityTypeAssignToContact, UIActivityTypeMessage, UIActivityTypePrint, UIActivityTypeSaveToCameraRoll];
+
+	if (UI_USER_INTERFACE_IDIOM() != UIUserInterfaceIdiomPad) {
+		[self presentViewController:activityVC animated:YES completion:^{
+			//your completion here
+		}];
+	} else {
+		self.popover = [[UIPopoverController alloc] initWithContentViewController:activityVC];
+		[self.popover presentPopoverFromBarButtonItem:(UIBarButtonItem*)sender permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+		
+	}
+	
 }
 
 @end
