@@ -1,4 +1,4 @@
-@version = "1.0.0"
+@version = "1.0.1"
 
 Pod::Spec.new do |s|
   s.name         	= 'VXPromotionViewController'
@@ -13,5 +13,4 @@ Pod::Spec.new do |s|
   s.frameworks		= 'StoreKit', 'CoreImage'
   s.resources 		= 'VXPromotionViewController/**/*.{bundle,xib,png,lproj}'
   s.requires_arc 	= true
-# s.dependency 'PSTCollectionView', '>= 1.1.0'
 end
