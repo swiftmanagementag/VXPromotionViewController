@@ -107,6 +107,7 @@
 			if(appID && (self.address == nil || self.appID == nil  || ![appID isEqualToString:self.appID])) {
 				// store app in cache
 				[self.appsLoaded setValue:app forKey:appID];
+				
 				// check if the app exists in the apps array
 				long row = [self.apps indexOfObject:appID];
 		
@@ -126,9 +127,7 @@
 		if(reloadTable ){
 			[self.tableView reloadData];
 		}
-		   
 	}
-	
 }
 
 
@@ -137,6 +136,11 @@
         return YES;
     
     return toInterfaceOrientation != UIInterfaceOrientationPortraitUpsideDown;
+}
+- (NSString *)imageFilePath:(NSString*)pAppID {
+	NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+	NSString *documentsDirectory = [paths objectAtIndex:0];
+	return [documentsDirectory stringByAppendingPathComponent:[NSString stringWithFormat:@"vxpromotion_%@.png", pAppID]];
 }
 
 #pragma mark Table view data source
@@ -147,6 +151,19 @@
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
 	return self.apps.count;
 }
+-(UIImage*)resizedImage:(UIImage*)pImage withSize:(CGSize)pSize{
+	UIGraphicsBeginImageContextWithOptions(pSize, NO, UIScreen.mainScreen.scale);
+
+	// Make a trivial (1x1) graphics context, and draw the image into it
+	CGRect imageRect = CGRectMake(0.0, 0.0, pSize.width, pSize.height);
+
+	[pImage drawInRect:imageRect];
+	UIImage *imageSized = UIGraphicsGetImageFromCurrentImageContext();
+
+	UIGraphicsEndImageContext();
+
+	return imageSized ?: pImage;
+}
 
 -(void)configureCell:(UITableViewCell*)pCell withIndexPath:(NSIndexPath*)indexPath withApp:(VXPromotionApp*)pApp {
 	double margin = 4.0f;
@@ -156,33 +173,38 @@
 		pCell.textLabel.text = pApp.name;
 		pCell.detailTextLabel.text = pApp.text;
 		
-		if([self.appsImages objectForKey:pApp.icon]) {
-			[pCell.imageView setImage:[self.appsImages objectForKey:pApp.icon]];
+		UIImage __block *image =[self.appsImages objectForKey:pApp.icon];
+		if(image) {
+			[pCell.imageView setImage:[self resizedImage:image withSize:CGSizeMake(height - 2*margin,height - 2*margin)]];
+		} else {
+			NSString __block *fileName = [self imageFilePath:pApp.productID];
+			image = [[UIImage alloc] initWithContentsOfFile:fileName];
+			
+			if(image) {
+				[pCell.imageView setImage:[self resizedImage:image withSize:CGSizeMake(height - 2*margin,height - 2*margin)]];
 		} else {
 			[pCell.imageView setImage:[UIImage imageNamed:@"placeholder.png"]];
+				
 			dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
-				
-				UIImage *img = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:pApp.icon]]];
-
-				// Make a trivial (1x1) graphics context, and draw the image into it
-				CGSize imageSize = CGSizeMake(height - 2*margin,height - 2*margin);
-				UIGraphicsBeginImageContextWithOptions(imageSize, NO, UIScreen.mainScreen.scale);
-				
-				CGRect imageRect = CGRectMake(0.0, 0.0, imageSize.width, imageSize.height);
-				
-				[img drawInRect:imageRect];
-				UIImage *imageSized = UIGraphicsGetImageFromCurrentImageContext();
-				
-				UIGraphicsEndImageContext();
+					image = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:pApp.icon]]];
+					UIImage *imageSized = [self resizedImage:image withSize:CGSizeMake(height - 2*margin,height - 2*margin)];
 			
 				// Now the image will have been loaded and decoded and is ready to rock for the main thread
 				dispatch_sync(dispatch_get_main_queue(), ^{
-					[pCell.imageView setImage:imageSized ?: img];
+						[pCell.imageView setImage:imageSized];
 					[pCell setNeedsLayout];
 					[pCell.imageView setNeedsDisplay];
-					[self.appsImages setValue:imageSized ?: img forKey:pApp.icon];
+						[self.appsImages setValue:imageSized forKey:pApp.icon];
+						
+						
 				});
+					
+					if(imageSized) {
+						NSData *imageData = [NSData dataWithData:UIImagePNGRepresentation(image)];
+						[imageData writeToFile:fileName atomically:YES];
+					}
 			});
+		}
 		}
 		pCell.imageView.backgroundColor = [UIColor clearColor];
 		pCell.imageView.layer.cornerRadius = 2*margin;
@@ -249,6 +271,7 @@
 #else
 	
 	SKStoreProductViewController *controller = [[SKStoreProductViewController alloc] init];
+	controller.delegate = self;
 	[controller loadProductWithParameters:@{SKStoreProductParameterITunesItemIdentifier:self.appID} completionBlock:^(BOOL result, NSError *error) {
 		if (error) {
 			NSLog(@"Error %@ with User Info %@.", error, [error userInfo]);
@@ -259,13 +282,16 @@
 	}];
 #endif
 }
+- (void)productViewControllerDidFinish:(SKStoreProductViewController *)viewController {
+	[viewController dismissViewControllerAnimated:YES completion:nil];
+}
 - (void)shareButtonTapped:(id)sender {
 	NSString *url = [NSString stringWithFormat:@"http://itunes.apple.com/WebObjects/MZStore.woa/wa/viewSoftware?id=&id=%@", self.appID];
 	NSURL *urlToShare = [NSURL URLWithString:url];
 	
 	NSString *textToShare = NSLocalizedString(@"VXPromotionShareTemplateCustom", nil);
 	
-	if(textToShare == nil) {
+	if(textToShare == nil || [textToShare length]==0 || [textToShare isEqualToString:@"VXPromotionShareTemplateCustom"]) {
 		textToShare = NSLocalizedStringFromTable(@"VXPromotionShareTemplate", @"VXPromotionViewController", nil);
 	}
 	

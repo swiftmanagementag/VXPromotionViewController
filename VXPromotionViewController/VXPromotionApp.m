@@ -10,28 +10,41 @@
 
 @implementation VXPromotionApp
 
-+(void)download:(NSString*)pID withCountry:(NSString*)pCountry withLanguage:(NSString*)pLanguage withDelegate:(id <VXDownloadDelegate>)pDelegate{
-	// show downloading indicator
-    [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
++ (NSString *)jsonFilePathFor:(NSString*)pString {
+	NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+	NSString *documentsDirectory = [paths objectAtIndex:0];
 	
+	pString = CFBridgingRelease(CFURLCreateStringByAddingPercentEscapes(NULL,(__bridge CFStringRef) pString, NULL,CFSTR("!*'();:@+$,/?%#[]"),kCFStringEncodingUTF8));
+	
+	NSDateComponents *components = [[NSCalendar currentCalendar] components:NSDayCalendarUnit | NSMonthCalendarUnit | NSYearCalendarUnit fromDate:[NSDate date]];
+
+	return [documentsDirectory stringByAppendingPathComponent:[NSString stringWithFormat:@"vxpromotion_%@_%li%li.json", pString, [components year], [components month]] ];
+}
+
+
++(void)download:(NSString*)pID withCountry:(NSString*)pCountry withLanguage:(NSString*)pLanguage withDelegate:(id <VXDownloadDelegate>)pDelegate{
+	// check local cache
+	NSString *fileName = [VXPromotionApp jsonFilePathFor:[NSString stringWithFormat:@"%@%@%@", pID, pCountry, pLanguage]];
+
+	NSData* data = [NSData dataWithContentsOfFile:fileName];
+	
+	if(data) {
+		[pDelegate downloadCompleteWithApps:[VXPromotionApp processJSON:data]];
+	} else {
 	// build apple conforming url
     NSString *url = [NSString stringWithFormat:@"https://itunes.apple.com/%@/lookup?id=%@&entity=software&lang=%@&limit=100", pCountry, pID, pLanguage];
 	
 	// download
 	[self downloadWithURL:url withDelegate:pDelegate];
+	}
 	
 }
-+(void)downloadWithURL:(NSString*)pURL withDelegate:(id <VXDownloadDelegate>)pDelegate{
-	NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:pURL]];
-	
-	[NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue mainQueue]
-	 	   completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError)  {
++(NSMutableArray*)processJSON:(NSData*)pData {
 			   NSMutableArray *apps = [NSMutableArray array];
-			   
 			   long counter = 0;
 			   
-			   if(data.length != 0 && !connectionError ) {
-				   id jsonResult = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+	if(pData.length != 0 ) {
+		id jsonResult = [NSJSONSerialization JSONObjectWithData:pData options:0 error:nil];
 
 				   NSArray* jsonObjects = nil;
 				   if([jsonResult isKindOfClass:[NSDictionary class]]) {
@@ -60,11 +73,35 @@
 					   [apps addObject:app];
 					}
 				   }
-				   [pDelegate downloadCompleteWithApps:apps];
+	}
+	return apps;
+}
++(void)downloadWithURL:(NSString*)pURL withDelegate:(id <VXDownloadDelegate>)pDelegate{
+	// check local cache
+	NSString *fileName = [VXPromotionApp jsonFilePathFor:pURL];
+	NSData* data = [NSData dataWithContentsOfFile:fileName];
+	
+	if(data) {
+		[pDelegate downloadCompleteWithApps:[VXPromotionApp processJSON:data]];
 				} else {
-					[pDelegate downloadCompleteWithApps:apps];
+		
+		// show downloading indicator
+		[UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
+		
+		NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:pURL]];
+		
+		[NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue mainQueue]
+			   completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError)  {
+				   [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
+				   if(connectionError && data && [data length] != 0) {
+					   [pDelegate downloadCompleteWithApps:nil];
+				   } else {
+					   [pDelegate downloadCompleteWithApps:[VXPromotionApp processJSON:data]];
+					   dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+						   [data writeToFile:fileName atomically:YES];
+					   });
 				}
-				[UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
    }];
+}
 }
 @end
