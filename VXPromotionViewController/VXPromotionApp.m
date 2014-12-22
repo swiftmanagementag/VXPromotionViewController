@@ -18,7 +18,7 @@
 	
 	NSDateComponents *components = [[NSCalendar currentCalendar] components:NSDayCalendarUnit | NSMonthCalendarUnit | NSYearCalendarUnit fromDate:[NSDate date]];
 
-	return [documentsDirectory stringByAppendingPathComponent:[NSString stringWithFormat:@"vxpromotion_%@_%li%li.json", pString, [components year], [components month]] ];
+	return [documentsDirectory stringByAppendingPathComponent:[NSString stringWithFormat:@"vxpromotion_%@_%li%li.json", pString, (long)[components year], (long)[components month]] ];
 }
 
 
