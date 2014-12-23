@@ -1,4 +1,4 @@
-@version = "1.0.1"
+@version = "1.0.3"
 
 Pod::Spec.new do |s|
   s.name         	= 'VXPromotionViewController'
