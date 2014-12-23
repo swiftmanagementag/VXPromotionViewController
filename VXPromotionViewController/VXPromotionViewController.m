@@ -86,9 +86,16 @@
 		// load apps from address - table is reloaded on completion
 		[VXPromotionApp downloadWithURL:self.address withDelegate:self];
 	} else if (self.apps) {
+		if(self.country == nil) {
+			NSLocale *locale = [NSLocale currentLocale];
+			self.country = [[locale objectForKey: NSLocaleCountryCode] lowercaseString];
+		}
+		if(self.language == nil) {
+			self.language = [[NSLocale preferredLanguages] firstObject];
+		}
 		// load apps using string array
 		for(NSString* appID in self.apps) {
-			[VXPromotionApp download:appID withCountry:@"ch" withLanguage:@"de" withDelegate:self];
+			[VXPromotionApp download:appID withCountry:self.country withLanguage:self.language withDelegate:self];
 		}
 		// reload table
 		[self.tableView reloadData];
