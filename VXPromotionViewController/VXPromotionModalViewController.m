@@ -7,12 +7,9 @@
 //  https://github.com/swiftmanagementag/VXPromotionViewController
 
 #import "VXPromotionModalViewController.h"
-#import "VXPromotionViewController.h"
 
 @interface VXPromotionModalViewController ()
-
 @property (nonatomic, strong) VXPromotionViewController *promoViewController;
-
 @end
 
 @interface VXPromotionViewController (DoneButton)
@@ -54,7 +51,12 @@
     [super viewWillAppear:NO];
 	
     self.promoViewController.title = self.title;
-    self.navigationBar.tintColor = self.barsTintColor;
+	if(self.tintColor) {
+		self.navigationBar.tintColor = self.tintColor;
+	}
+	if(self.barTintColor) {
+		self.navigationBar.barTintColor = self.barTintColor;
+	}
 }
 
 -(void)setAppID:(NSString *)appID {
