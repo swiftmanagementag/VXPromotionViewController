@@ -293,7 +293,7 @@
 	[viewController dismissViewControllerAnimated:YES completion:nil];
 }
 - (void)shareButtonTapped:(id)sender {
-	NSString *url = [NSString stringWithFormat:@"http://itunes.apple.com/WebObjects/MZStore.woa/wa/viewSoftware?id=&id=%@", self.appID];
+	NSString *url = [NSString stringWithFormat:@"http://itunes.apple.com/WebObjects/MZStore.woa/wa/viewSoftware?id=%@", self.appID];
 	NSURL *urlToShare = [NSURL URLWithString:url];
 	
 	NSString *textToShare = NSLocalizedString(@"VXPromotionShareTemplateCustom", nil);
