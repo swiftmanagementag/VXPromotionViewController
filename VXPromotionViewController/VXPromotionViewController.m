@@ -121,10 +121,11 @@
 				if(row != NSNotFound) {
 					NSIndexPath *indexPath = [NSIndexPath indexPathForRow:row inSection:0];
 				
-					// update the correct row...
-					[self.tableView beginUpdates];
-					[self.tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationBottom];
-					[self.tableView endUpdates];
+					reloadTable = YES;
+					// this causes crashes
+					//[self.tableView beginUpdates];
+					//[self.tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationBottom];
+					//[self.tableView endUpdates];
 				} else {
 					reloadTable = YES;
 					[self.apps addObject:appID];
