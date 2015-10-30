@@ -51,6 +51,9 @@
 - (void)viewDidLoad {
 	[super viewDidLoad];
 	
+	self.tableView.delegate = self;
+	self.tableView.dataSource = self;
+
 	// initialise holding arrays
 	self.appsLoaded = [[NSMutableDictionary alloc] init];
 	self.appsImages = [[NSMutableDictionary alloc] init];
@@ -98,7 +101,7 @@
 			[VXPromotionApp download:appID withCountry:self.country withLanguage:self.language withDelegate:self];
 		}
 		// reload table
-		[self.tableView reloadData];
+		//[self.tableView reloadData];
 
 	}
 }
@@ -118,18 +121,11 @@
 				// check if the app exists in the apps array
 				long row = [self.apps indexOfObject:appID];
 		
-				if(row != NSNotFound) {
-					NSIndexPath *indexPath = [NSIndexPath indexPathForRow:row inSection:0];
-				
-					reloadTable = YES;
-					// this causes crashes
-					//[self.tableView beginUpdates];
-					//[self.tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationBottom];
-					//[self.tableView endUpdates];
-				} else {
-					reloadTable = YES;
+				if(row == NSNotFound) {
 					[self.apps addObject:appID];
 				}
+				// reload table
+				reloadTable = YES;
 			}
 		}
 		if(reloadTable ){
