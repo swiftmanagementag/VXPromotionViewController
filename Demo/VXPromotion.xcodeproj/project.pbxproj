@@ -27,6 +27,17 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0A0746B91C86F8250069CF4C /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/VXPromotionViewController.strings; sourceTree = "<group>"; };
+		0A0746BA1C86F82A0069CF4C /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/VXPromotionViewController.strings; sourceTree = "<group>"; };
+		0A0746BB1C86F82F0069CF4C /* nl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = nl; path = nl.lproj/VXPromotionViewController.strings; sourceTree = "<group>"; };
+		0A0746BC1C86F8380069CF4C /* sv */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sv; path = sv.lproj/VXPromotionViewController.strings; sourceTree = "<group>"; };
+		0A0746BD1C86F9570069CF4C /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/VXPromotionViewController.strings"; sourceTree = "<group>"; };
+		0A0746BE1C86F95D0069CF4C /* da */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = da; path = da.lproj/VXPromotionViewController.strings; sourceTree = "<group>"; };
+		0A0746BF1C86F9620069CF4C /* pt-PT */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-PT"; path = "pt-PT.lproj/VXPromotionViewController.strings"; sourceTree = "<group>"; };
+		0A0746C01C86F9680069CF4C /* fi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fi; path = fi.lproj/VXPromotionViewController.strings; sourceTree = "<group>"; };
+		0A0746C11C86F96D0069CF4C /* pl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pl; path = pl.lproj/VXPromotionViewController.strings; sourceTree = "<group>"; };
+		0A0746C21C86F9720069CF4C /* tr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = tr; path = tr.lproj/VXPromotionViewController.strings; sourceTree = "<group>"; };
+		0A0746C31C86FA310069CF4C /* nb */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = nb; path = nb.lproj/VXPromotionViewController.strings; sourceTree = "<group>"; };
 		0AA8BC981A441A740031E730 /* VXPromotionApp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VXPromotionApp.h; sourceTree = "<group>"; };
 		0AA8BC991A441A740031E730 /* VXPromotionApp.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VXPromotionApp.m; sourceTree = "<group>"; };
 		0AA8BC9B1A441D7D0031E730 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
@@ -192,7 +203,7 @@
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0500;
+				LastUpgradeCheck = 0720;
 				TargetAttributes = {
 					1D6058900D05DD3D006BFB54 = {
 						DevelopmentTeam = U6P68B87Q3;
@@ -212,6 +223,17 @@
 				zh_CN,
 				fr,
 				de,
+				es,
+				it,
+				nl,
+				sv,
+				"pt-BR",
+				da,
+				"pt-PT",
+				fi,
+				pl,
+				tr,
+				nb,
 			);
 			mainGroup = 29B97314FDCFA39411CA2CEA /* CustomTemplate */;
 			projectDirPath = "";
@@ -262,6 +284,17 @@
 				0AA8BCAD1A4489330031E730 /* en */,
 				0AA8BCAF1A4489360031E730 /* fr */,
 				0AA8BCB01A4489370031E730 /* de */,
+				0A0746B91C86F8250069CF4C /* es */,
+				0A0746BA1C86F82A0069CF4C /* it */,
+				0A0746BB1C86F82F0069CF4C /* nl */,
+				0A0746BC1C86F8380069CF4C /* sv */,
+				0A0746BD1C86F9570069CF4C /* pt-BR */,
+				0A0746BE1C86F95D0069CF4C /* da */,
+				0A0746BF1C86F9620069CF4C /* pt-PT */,
+				0A0746C01C86F9680069CF4C /* fi */,
+				0A0746C11C86F96D0069CF4C /* pl */,
+				0A0746C21C86F9720069CF4C /* tr */,
+				0A0746C31C86FA310069CF4C /* nb */,
 			);
 			name = VXPromotionViewController.strings;
 			sourceTree = "<group>";
@@ -281,6 +314,7 @@
 				GCC_PREFIX_HEADER = VXPromotion_Prefix.pch;
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				INFOPLIST_FILE = "VXPromotion-Info.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.yourcompany.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = VXPromotion;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -292,6 +326,7 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = NO;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;

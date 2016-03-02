@@ -11,6 +11,14 @@ You can specify specific apps or load available apps for a publisher.
 * iPhone and iPad distinct UIs
 * full landscape orientation support
 
+## Release notes
+
+### 1.0.7
+Added loading indicator in status bar for longer running tasks
+Fixed automatic language error for certain locales
+Added localisations (thanks for corrections)
+Recompiled and fixed warnings under XCode 7.2.1
+
 ## Installation
 
 ### CocoaPods

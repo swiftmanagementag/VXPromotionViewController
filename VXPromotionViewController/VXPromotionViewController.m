@@ -95,6 +95,9 @@
 		}
 		if(self.language == nil) {
 			self.language = [[NSLocale preferredLanguages] firstObject];
+			if(self.language && [self.language containsString:@"-"]) {
+				self.language = [self.language  componentsSeparatedByString:@"-"][0];
+			}
 		}
 		// load apps using string array
 		for(NSString* appID in self.apps) {
@@ -244,6 +247,8 @@
 	[alertView show];
 	return;
 #else
+	[UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
+
 	NSString *productID = [self.apps objectAtIndex:indexPath.row];
 	
 	//[[UINavigationBar appearance] setTintColor:[UIColor darkTextColor]];
@@ -257,6 +262,7 @@
 			// Present Store Product View Controller
 			[self presentViewController:controller animated:YES completion:nil];
 		}
+		[UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
 	}];
 	[tableView deselectRowAtIndexPath:[tableView indexPathForSelectedRow] animated:YES];
 #endif
@@ -273,7 +279,8 @@
 	[alertView show];
 	return;
 #else
-	
+	[UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
+
 	SKStoreProductViewController *controller = [[SKStoreProductViewController alloc] init];
 	controller.delegate = self;
 	[controller loadProductWithParameters:@{SKStoreProductParameterITunesItemIdentifier:self.appID} completionBlock:^(BOOL result, NSError *error) {
@@ -283,6 +290,7 @@
 			// Present Store Product View Controller
 			[self presentViewController:controller animated:YES completion:nil];
 		}
+		[UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
 	}];
 #endif
 }
