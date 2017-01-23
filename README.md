@@ -13,6 +13,9 @@ You can specify specific apps or load available apps for a publisher.
 
 ## Release notes
 
+### 1.0.8
+Some minor changes to improve compatability with IOS10
+
 ### 1.0.7
 Added loading indicator in status bar for longer running tasks
 Fixed automatic language error for certain locales

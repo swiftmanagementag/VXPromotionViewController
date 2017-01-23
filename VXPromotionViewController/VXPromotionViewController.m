@@ -189,36 +189,44 @@
 			
 			if(image) {
 				[pCell.imageView setImage:[self resizedImage:image withSize:CGSizeMake(height - 2*margin,height - 2*margin)]];
-		} else {
-			[pCell.imageView setImage:[UIImage imageNamed:@"placeholder.png"]];
-				
-			dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
-					image = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:pApp.icon]]];
-					UIImage *imageSized = [self resizedImage:image withSize:CGSizeMake(height - 2*margin,height - 2*margin)];
-			
-				// Now the image will have been loaded and decoded and is ready to rock for the main thread
-				dispatch_sync(dispatch_get_main_queue(), ^{
-						[pCell.imageView setImage:imageSized];
-					[pCell setNeedsLayout];
-					[pCell.imageView setNeedsDisplay];
-						[self.appsImages setValue:imageSized forKey:pApp.icon];
-						
-						
-				});
-					
-					if(imageSized) {
-						NSData *imageData = [NSData dataWithData:UIImagePNGRepresentation(image)];
-						[imageData writeToFile:fileName atomically:YES];
-					}
-			});
-		}
-		}
-		pCell.imageView.backgroundColor = [UIColor clearColor];
-		pCell.imageView.layer.cornerRadius = 2*margin;
-		pCell.imageView.layer.masksToBounds = YES;
-		pCell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-		
-	}
+            } else {
+                [pCell.imageView setImage:[UIImage imageNamed:@"placeholder.png"]];
+                    
+                dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+                    NSURLSession *session = [NSURLSession sharedSession];
+                    NSURL *url = [NSURL URLWithString:pApp.icon];
+                    [[session dataTaskWithURL:url
+                            completionHandler:^(NSData *data,
+                                                NSURLResponse *response,
+                                                NSError *error) {
+                        if ( !error ) {
+                            UIImage *image = [[UIImage alloc] initWithData:data];
+                            if(image) {
+                                UIImage *imageSized = [self resizedImage:image withSize:CGSizeMake(height - 2*margin,height - 2*margin)];
+                                if(imageSized) {
+                                    // Now the image will have been loaded and decoded and is ready to rock for the main thread
+                                    dispatch_sync(dispatch_get_main_queue(), ^{
+                                        [pCell.imageView setImage:imageSized];
+                                        [pCell setNeedsLayout];
+                                        [pCell.imageView setNeedsDisplay];
+                                        [self.appsImages setValue:imageSized forKey:pApp.icon];
+                                    });
+                                    NSData *imageData = [NSData dataWithData:UIImagePNGRepresentation(image)];
+                                    [imageData writeToFile:fileName atomically:YES];
+                                }
+                            }
+                        } else {
+                            NSLog(@"Error in downloading image:%@",url);
+                        }
+                    }] resume];
+                });
+            };
+            pCell.imageView.backgroundColor = [UIColor clearColor];
+            pCell.imageView.layer.cornerRadius = 2*margin;
+            pCell.imageView.layer.masksToBounds = YES;
+            pCell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+        };
+    };
 };
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -298,7 +306,7 @@
 	[viewController dismissViewControllerAnimated:YES completion:nil];
 }
 - (void)shareButtonTapped:(id)sender {
-	NSString *url = [NSString stringWithFormat:@"http://itunes.apple.com/WebObjects/MZStore.woa/wa/viewSoftware?id=%@", self.appID];
+	NSString *url = [NSString stringWithFormat:@"https://itunes.apple.com/WebObjects/MZStore.woa/wa/viewSoftware?id=%@", self.appID];
 	NSURL *urlToShare = [NSURL URLWithString:url];
 	
 	NSString *textToShare = NSLocalizedString(@"VXPromotionShareTemplateCustom", nil);
