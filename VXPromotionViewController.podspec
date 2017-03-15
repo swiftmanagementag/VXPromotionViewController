@@ -1,4 +1,4 @@
-@version = "1.0.8"
+@version = "1.0.9"
 
 Pod::Spec.new do |s|
   s.name         	= 'VXPromotionViewController'
@@ -11,6 +11,9 @@ Pod::Spec.new do |s|
   s.platform     	= :ios, '7.0'
   s.source_files 	= 'VXPromotionViewController/**/*.{h,m}'
   s.frameworks		= 'StoreKit', 'CoreImage'
-  s.resources 		= 'VXPromotionViewController/**/*.{bundle,xib,png,lproj}'
+  #s.resources 		= 'VXPromotionViewController/**/*.{bundle,xib,png,lproj}'
+  s.resource_bundles = {
+    'VXPromotionViewController' => ['VXPromotionViewController/**/*.{bundle,xib,png,lproj}']
+  }
   s.requires_arc 	= true
 end

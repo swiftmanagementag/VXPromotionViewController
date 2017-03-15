@@ -13,6 +13,9 @@ You can specify specific apps or load available apps for a publisher.
 
 ## Release notes
 
+### 1.0.9
+Move to resource bundles
+
 ### 1.0.8
 Some minor changes to improve compatability with IOS10
 

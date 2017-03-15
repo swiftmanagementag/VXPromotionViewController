@@ -59,7 +59,8 @@
 	self.appsImages = [[NSMutableDictionary alloc] init];
 
 	if(self.appID) {
-		UIBarButtonItem *rateButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"VXPromotionViewController.bundle/VXPromotionViewControllerRate"] style:UIBarButtonItemStylePlain
+		
+		UIBarButtonItem *rateButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"VXPromotionViewControllerRate" inBundle:[VXPromotionViewController bundle] compatibleWithTraitCollection:nil] style:UIBarButtonItemStylePlain
 																				target:self
 																				action:@selector(rateButtonTapped:)];
 		UIBarButtonItem *shareButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAction
@@ -312,7 +313,7 @@
 	NSString *textToShare = NSLocalizedString(@"VXPromotionShareTemplateCustom", nil);
 	
 	if(textToShare == nil || [textToShare length]==0 || [textToShare isEqualToString:@"VXPromotionShareTemplateCustom"]) {
-		textToShare = NSLocalizedStringFromTable(@"VXPromotionShareTemplate", @"VXPromotionViewController", nil);
+		textToShare = NSLocalizedStringFromTableInBundle(@"VXPromotionShareTemplate", @"VXPromotionViewController", [VXPromotionViewController bundle], @"" );
 	}
 	
 	NSMutableArray *activityItems = [@[textToShare, urlToShare] mutableCopy];
@@ -343,6 +344,23 @@
 		
 	}
 	
+}
+
++ (NSBundle *)bundle {
+	NSBundle *bundle = [NSBundle bundleForClass:VXPromotionViewController.class];
+	
+	if(bundle) {
+		NSURL *bundleURL = [bundle URLForResource:@"VXPromotionViewController" withExtension:@"bundle"];
+	
+		if (bundleURL) {
+			bundle = [NSBundle bundleWithURL:bundleURL];
+		}
+	}
+	if (!bundle) {
+		bundle = [NSBundle mainBundle];
+	}
+	
+	return bundle;
 }
 
 @end
