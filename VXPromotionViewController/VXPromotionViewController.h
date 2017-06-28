@@ -9,6 +9,7 @@
 @interface VXPromotionViewController : UITableViewController
 
 @property (nonatomic, strong) NSString *appID;
+@property (nonatomic, strong) NSString *affiliateCode;
 @property (nonatomic, strong) NSString *language;
 @property (nonatomic, strong) NSString *country;
 

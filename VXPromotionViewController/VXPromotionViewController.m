@@ -264,7 +264,7 @@
 	SKStoreProductViewController *controller = [[SKStoreProductViewController alloc] init];
 	controller.delegate = self;
 	
-	[controller loadProductWithParameters:@{SKStoreProductParameterITunesItemIdentifier:productID} completionBlock:^(BOOL result, NSError *error) {
+	[controller loadProductWithParameters:@{SKStoreProductParameterITunesItemIdentifier:productID, SKStoreProductParameterAffiliateToken:self.affiliateCode, SKStoreProductParameterCampaignToken:self.appid} completionBlock:^(BOOL result, NSError *error) {
 		if (error) {
 			NSLog(@"Error %@ with User Info %@.", error, [error userInfo]);
 		} else {
