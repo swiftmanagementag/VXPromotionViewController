@@ -22,7 +22,7 @@
 
 
 - (void)presentViewController {
-	VXPromotionModalViewController *promoViewController = [[VXPromotionModalViewController alloc] initWithAddress:@"http://www.swift.ch/api/ch/de"];
+	VXPromotionModalViewController *promoViewController = [[VXPromotionModalViewController alloc] initWithAddress:@"https://www.swift.ch/api/ch/de"];
 	promoViewController.modalPresentationStyle = UIModalPresentationPageSheet;
 	promoViewController.appID = @"499346672";
     [self presentViewController:promoViewController animated:YES completion:NULL];

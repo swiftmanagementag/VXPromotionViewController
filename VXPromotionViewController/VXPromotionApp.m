@@ -83,7 +83,7 @@
 	
 	if(data) {
 		[pDelegate downloadCompleteWithApps:[VXPromotionApp processJSON:data]];
-				} else {
+	} else {
 		
 		// show downloading indicator
 		[UIApplication sharedApplication].networkActivityIndicatorVisible = YES;

@@ -45,7 +45,7 @@ Just like any UIViewController, VXPromotionViewController can be pushed into a U
 If you specify your app id, a rating and share button is displayed
 
 ```objective-c
-VXPromotionViewController *promoViewController = [[VXPromotionViewController alloc] initWithAddress:@"http://www.swift.ch/api/ch/de"];
+VXPromotionViewController *promoViewController = [[VXPromotionViewController alloc] initWithAddress:@"https://www.swift.ch/api/ch/de"];
 promoViewController.appID = @"499346672";
 [self.navigationController pushViewController:promoViewController animated:YES];
 ```
@@ -61,4 +61,4 @@ promoViewController.appID = @"499346672";
 ## Credits
 
 VXPromotionViewController is based on Sam Vermettes [SVWebViewController](https://github.com/samvermette/SVWebViewController).
-VXPromotionViewController is brought to you by [Swift Management AG](http://www.swift.ch) and [contributors to the project](https://github.com/swiftmanagementag/VXPromotionViewController/contributors). If you have feature suggestions or bug reports, feel free to help out by sending pull requests or by [creating new issues](https://github.com/swiftmanagementag/VXPromotionViewController/issues/new). If you're using VXPromotionViewController in your project, attribution is always appreciated.
+VXPromotionViewController is brought to you by [Swift Management AG](https://www.swift.ch) and [contributors to the project](https://github.com/swiftmanagementag/VXPromotionViewController/contributors). If you have feature suggestions or bug reports, feel free to help out by sending pull requests or by [creating new issues](https://github.com/swiftmanagementag/VXPromotionViewController/issues/new). If you're using VXPromotionViewController in your project, attribution is always appreciated.
