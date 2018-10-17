@@ -251,56 +251,45 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
 #if TARGET_IPHONE_SIMULATOR
-	UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:[self.class description] message:@"Sorry, you cannot open the Storekit Controller in Simulator." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
-	
-	[alertView show];
-	return;
+    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:[self.class description] message:@"Sorry, you cannot open the Storekit Controller in Simulator." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
+
+    [alertView show];
+    return;
 #else
-	[UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
+    tableView.allowsSelection = false;
 
-	NSString *productID = [self.apps objectAtIndex:indexPath.row];
-	
-	//[[UINavigationBar appearance] setTintColor:[UIColor darkTextColor]];
-	SKStoreProductViewController *controller = [[SKStoreProductViewController alloc] init];
-	controller.delegate = self;
-	
-	[controller loadProductWithParameters:@{SKStoreProductParameterITunesItemIdentifier:productID ?: @"", SKStoreProductParameterAffiliateToken:self.affiliateCode ?: @"", SKStoreProductParameterCampaignToken:self.appID ?: @""} completionBlock:^(BOOL result, NSError *error) {
-		if (error) {
-			NSLog(@"Error %@ with User Info %@.", error, [error userInfo]);
-		} else {
-			// Present Store Product View Controller
-			[self presentViewController:controller animated:YES completion:nil];
-		}
-		[UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
-	}];
-	[tableView deselectRowAtIndexPath:[tableView indexPathForSelectedRow] animated:YES];
-#endif
-}
-#pragma mark - Actions
-- (void)doneButtonTapped:(id)sender {
-	[self dismissViewControllerAnimated:YES completion:nil];
-}
+    UIActivityIndicatorView *activityIndicatorView=[[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
 
-- (void)rateButtonTapped:(id)sender {
-#if TARGET_IPHONE_SIMULATOR
-	UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:[self.class description] message:@"Sorry, you cannot open the Storekit Controller in Simulator." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
-	
-	[alertView show];
-	return;
-#else
-	[UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
+    UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
+    [cell.imageView addSubview:activityIndicatorView];
 
-	SKStoreProductViewController *controller = [[SKStoreProductViewController alloc] init];
-	controller.delegate = self;
-	[controller loadProductWithParameters:@{SKStoreProductParameterITunesItemIdentifier:self.appID} completionBlock:^(BOOL result, NSError *error) {
-		if (error) {
-			NSLog(@"Error %@ with User Info %@.", error, [error userInfo]);
-		} else {
-			// Present Store Product View Controller
-			[self presentViewController:controller animated:YES completion:nil];
-		}
-		[UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
-	}];
+    [activityIndicatorView startAnimating];
+    [activityIndicatorView setBackgroundColor:[UIColor lightGrayColor]];
+
+    [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
+    NSString *productID = [self.apps objectAtIndex:indexPath.row];
+
+    //[[UINavigationBar appearance] setTintColor:[UIColor darkTextColor]];
+    SKStoreProductViewController *controller = [[SKStoreProductViewController alloc] init];
+    controller.delegate = self;
+
+    [controller loadProductWithParameters:@{SKStoreProductParameterITunesItemIdentifier:productID} completionBlock:^(BOOL result, NSError *error) {
+
+        if (error) {
+            NSLog(@"Error %@ with User Info %@.", error, [error userInfo]);
+        } else {
+            // Present Store Product View Controller
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [self presentViewController:controller animated:YES completion:nil];
+            });
+        }
+        [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
+        [activityIndicatorView removeFromSuperview];
+        tableView.allowsSelection = true;
+        [tableView deselectRowAtIndexPath:[tableView indexPathForSelectedRow] animated:YES];
+    }
+     ];
+
 #endif
 }
 - (void)productViewControllerDidFinish:(SKStoreProductViewController *)viewController {
