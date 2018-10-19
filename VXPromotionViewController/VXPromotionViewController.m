@@ -292,14 +292,19 @@
 
 	SKStoreProductViewController *controller = [[SKStoreProductViewController alloc] init];
 	controller.delegate = self;
+	
 	[controller loadProductWithParameters:@{SKStoreProductParameterITunesItemIdentifier:self.appID} completionBlock:^(BOOL result, NSError *error) {
 		if (error) {
 			NSLog(@"Error %@ with User Info %@.", error, [error userInfo]);
+			[UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
 		} else {
-			// Present Store Product View Controller
-			[self presentViewController:controller animated:YES completion:nil];
+			dispatch_async(dispatch_get_main_queue(), ^{
+				UIViewController *pvc = [self presentedViewController] != nil ?  [self presentedViewController] : self ;
+				// Present Store Product View Controller
+				[self presentViewController:controller animated:YES completion:nil];
+				[UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
+			});
 		}
-		[UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
 	}];
 #endif
 }
@@ -334,15 +339,21 @@
 	UIActivityViewController *activityVC = [[UIActivityViewController alloc] initWithActivityItems:activityItems  applicationActivities:nil];
 	activityVC.excludedActivityTypes = @[UIActivityTypePostToWeibo,  UIActivityTypeAssignToContact, UIActivityTypeMessage, UIActivityTypePrint, UIActivityTypeSaveToCameraRoll];
 
-	if (UI_USER_INTERFACE_IDIOM() != UIUserInterfaceIdiomPad) {
-		[self presentViewController:activityVC animated:YES completion:^{
-			//your completion here
-		}];
-	} else {
-		self.popover = [[UIPopoverController alloc] initWithContentViewController:activityVC];
-		[self.popover presentPopoverFromBarButtonItem:(UIBarButtonItem*)sender permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
-		
+	activityVC.modalPresentationStyle = UIModalPresentationPopover;
+	if([sender isKindOfClass:[UIView class]]) {
+		activityVC.popoverPresentationController.sourceView = ((UIView *)sender);
+		activityVC.popoverPresentationController.sourceRect = ((UIView *)sender).bounds;
+	} else if([sender isKindOfClass:[UIBarButtonItem class]]) {
+		activityVC.popoverPresentationController.barButtonItem = ((UIBarButtonItem *)sender);
+		activityVC.popoverPresentationController.permittedArrowDirections =  UIPopoverArrowDirectionAny;
 	}
+	
+	[self presentViewController:activityVC
+					   animated:YES
+					 completion:^{
+						 // your completion here
+						 NSLog(@"Share completed");
+					 }];
 	
 }
 
