@@ -13,6 +13,12 @@ You can specify specific apps or load available apps for a publisher.
 
 ## Release notes
 
+### 1.0.10
+Activity indicator
+Support for affiliate code
+Better iPad support
+Bug squashing
+
 ### 1.0.9
 Move to resource bundles
 

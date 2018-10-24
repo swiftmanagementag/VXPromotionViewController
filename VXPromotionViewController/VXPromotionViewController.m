@@ -53,19 +53,19 @@
 	
 	self.tableView.delegate = self;
 	self.tableView.dataSource = self;
-
+	
 	// initialise holding arrays
 	self.appsLoaded = [[NSMutableDictionary alloc] init];
 	self.appsImages = [[NSMutableDictionary alloc] init];
-
+	
 	if(self.appID) {
 		
 		UIBarButtonItem *rateButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"VXPromotionViewControllerRate" inBundle:[VXPromotionViewController bundle] compatibleWithTraitCollection:nil] style:UIBarButtonItemStylePlain
-																				target:self
-																				action:@selector(rateButtonTapped:)];
+																	  target:self
+																	  action:@selector(rateButtonTapped:)];
 		UIBarButtonItem *shareButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAction
-																				target:self
-																				action:@selector(shareButtonTapped:)];
+																					 target:self
+																					 action:@selector(shareButtonTapped:)];
 		self.navigationItem.rightBarButtonItems = @[shareButton,rateButton];
 	}
 	[self load];
@@ -106,7 +106,7 @@
 		}
 		// reload table
 		//[self.tableView reloadData];
-
+		
 	}
 }
 -(void)downloadCompleteWithApps:(NSArray *)pApps {
@@ -116,7 +116,7 @@
 		for (VXPromotionApp *app in pApps) {
 			// app id should be a string
 			NSString *appID = [NSString stringWithFormat:@"%@", app.productID ];
-
+			
 			// filter our your own app id
 			if(appID && (self.address == nil || self.appID == nil  || ![appID isEqualToString:self.appID])) {
 				// store app in cache
@@ -124,7 +124,7 @@
 				
 				// check if the app exists in the apps array
 				long row = [self.apps indexOfObject:appID];
-		
+				
 				if(row == NSNotFound) {
 					[self.apps addObject:appID];
 				}
@@ -140,10 +140,10 @@
 
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation {
-    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
-        return YES;
-    
-    return toInterfaceOrientation != UIInterfaceOrientationPortraitUpsideDown;
+	if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
+		return YES;
+	
+	return toInterfaceOrientation != UIInterfaceOrientationPortraitUpsideDown;
 }
 - (NSString *)imageFilePath:(NSString*)pAppID {
 	NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
@@ -161,22 +161,22 @@
 }
 -(UIImage*)resizedImage:(UIImage*)pImage withSize:(CGSize)pSize{
 	UIGraphicsBeginImageContextWithOptions(pSize, NO, UIScreen.mainScreen.scale);
-
+	
 	// Make a trivial (1x1) graphics context, and draw the image into it
 	CGRect imageRect = CGRectMake(0.0, 0.0, pSize.width, pSize.height);
-
+	
 	[pImage drawInRect:imageRect];
 	UIImage *imageSized = UIGraphicsGetImageFromCurrentImageContext();
-
+	
 	UIGraphicsEndImageContext();
-
+	
 	return imageSized ?: pImage;
 }
 
 -(void)configureCell:(UITableViewCell*)pCell withIndexPath:(NSIndexPath*)indexPath withApp:(VXPromotionApp*)pApp {
 	double margin = 4.0f;
 	double height = [self tableView:self.tableView heightForRowAtIndexPath:indexPath];
-
+	
 	if(pApp && pApp.name) {
 		pCell.textLabel.text = pApp.name;
 		pCell.detailTextLabel.text = pApp.text;
@@ -190,44 +190,44 @@
 			
 			if(image) {
 				[pCell.imageView setImage:[self resizedImage:image withSize:CGSizeMake(height - 2*margin,height - 2*margin)]];
-            } else {
-                [pCell.imageView setImage:[UIImage imageNamed:@"placeholder.png"]];
-                    
-                dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
-                    NSURLSession *session = [NSURLSession sharedSession];
-                    NSURL *url = [NSURL URLWithString:pApp.icon];
-                    [[session dataTaskWithURL:url
-                            completionHandler:^(NSData *data,
-                                                NSURLResponse *response,
-                                                NSError *error) {
-                        if ( !error ) {
-                            UIImage *image = [[UIImage alloc] initWithData:data];
-                            if(image) {
-                                UIImage *imageSized = [self resizedImage:image withSize:CGSizeMake(height - 2*margin,height - 2*margin)];
-                                if(imageSized) {
-                                    // Now the image will have been loaded and decoded and is ready to rock for the main thread
-                                    dispatch_sync(dispatch_get_main_queue(), ^{
-                                        [pCell.imageView setImage:imageSized];
-                                        [pCell setNeedsLayout];
-                                        [pCell.imageView setNeedsDisplay];
-                                        [self.appsImages setValue:imageSized forKey:pApp.icon];
-                                    });
-                                    NSData *imageData = [NSData dataWithData:UIImagePNGRepresentation(image)];
-                                    [imageData writeToFile:fileName atomically:YES];
-                                }
-                            }
-                        } else {
-                            NSLog(@"Error in downloading image:%@",url);
-                        }
-                    }] resume];
-                });
-            };
-            pCell.imageView.backgroundColor = [UIColor clearColor];
-            pCell.imageView.layer.cornerRadius = 2*margin;
-            pCell.imageView.layer.masksToBounds = YES;
-            pCell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-        };
-    };
+			} else {
+				[pCell.imageView setImage:[UIImage imageNamed:@"placeholder.png"]];
+				
+				dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+					NSURLSession *session = [NSURLSession sharedSession];
+					NSURL *url = [NSURL URLWithString:pApp.icon];
+					[[session dataTaskWithURL:url
+							completionHandler:^(NSData *data,
+												NSURLResponse *response,
+												NSError *error) {
+								if ( !error ) {
+									UIImage *image = [[UIImage alloc] initWithData:data];
+									if(image) {
+										UIImage *imageSized = [self resizedImage:image withSize:CGSizeMake(height - 2*margin,height - 2*margin)];
+										if(imageSized) {
+											// Now the image will have been loaded and decoded and is ready to rock for the main thread
+											dispatch_sync(dispatch_get_main_queue(), ^{
+												[pCell.imageView setImage:imageSized];
+												[pCell setNeedsLayout];
+												[pCell.imageView setNeedsDisplay];
+												[self.appsImages setValue:imageSized forKey:pApp.icon];
+											});
+											NSData *imageData = [NSData dataWithData:UIImagePNGRepresentation(image)];
+											[imageData writeToFile:fileName atomically:YES];
+										}
+									}
+								} else {
+									NSLog(@"Error in downloading image:%@",url);
+								}
+							}] resume];
+				});
+			};
+			pCell.imageView.backgroundColor = [UIColor clearColor];
+			pCell.imageView.layer.cornerRadius = 2*margin;
+			pCell.imageView.layer.masksToBounds = YES;
+			pCell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+		};
+	};
 };
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -256,8 +256,17 @@
 	[alertView show];
 	return;
 #else
+	tableView.allowsSelection = false;
+	
+	UIActivityIndicatorView *activityIndicatorView=[[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
+	
+	UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
+	[cell.imageView addSubview:activityIndicatorView];
+	
+	[activityIndicatorView startAnimating];
+	[activityIndicatorView setBackgroundColor:[UIColor lightGrayColor]];
+	
 	[UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
-
 	NSString *productID = [self.apps objectAtIndex:indexPath.row];
 	
 	//[[UINavigationBar appearance] setTintColor:[UIColor darkTextColor]];
@@ -269,9 +278,15 @@
 			NSLog(@"Error %@ with User Info %@.", error, [error userInfo]);
 		} else {
 			// Present Store Product View Controller
-			[self presentViewController:controller animated:YES completion:nil];
+			dispatch_async(dispatch_get_main_queue(), ^{
+				[self presentViewController:controller animated:YES completion:nil];
+			});
 		}
 		[UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
+		[activityIndicatorView removeFromSuperview];
+		tableView.allowsSelection = true;
+		[tableView deselectRowAtIndexPath:[tableView indexPathForSelectedRow] animated:YES];
+		
 	}];
 	[tableView deselectRowAtIndexPath:[tableView indexPathForSelectedRow] animated:YES];
 #endif
@@ -289,7 +304,7 @@
 	return;
 #else
 	[UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
-
+	
 	SKStoreProductViewController *controller = [[SKStoreProductViewController alloc] init];
 	controller.delegate = self;
 	
@@ -331,14 +346,14 @@
 			break;
 		}
 	}
-		
+	
 	if(imageToShare != nil) {
 		[activityItems addObject:imageToShare];
 	}
 	
 	UIActivityViewController *activityVC = [[UIActivityViewController alloc] initWithActivityItems:activityItems  applicationActivities:nil];
 	activityVC.excludedActivityTypes = @[UIActivityTypePostToWeibo,  UIActivityTypeAssignToContact, UIActivityTypeMessage, UIActivityTypePrint, UIActivityTypeSaveToCameraRoll];
-
+	
 	activityVC.modalPresentationStyle = UIModalPresentationPopover;
 	if([sender isKindOfClass:[UIView class]]) {
 		activityVC.popoverPresentationController.sourceView = ((UIView *)sender);
@@ -362,7 +377,7 @@
 	
 	if(bundle) {
 		NSURL *bundleURL = [bundle URLForResource:@"VXPromotionViewController" withExtension:@"bundle"];
-	
+		
 		if (bundleURL) {
 			bundle = [NSBundle bundleWithURL:bundleURL];
 		}
