@@ -289,7 +289,6 @@
         [tableView deselectRowAtIndexPath:[tableView indexPathForSelectedRow] animated:YES];
     }
      ];
-
 #endif
 }
 - (void)productViewControllerDidFinish:(SKStoreProductViewController *)viewController {
@@ -323,15 +322,21 @@
 	UIActivityViewController *activityVC = [[UIActivityViewController alloc] initWithActivityItems:activityItems  applicationActivities:nil];
 	activityVC.excludedActivityTypes = @[UIActivityTypePostToWeibo,  UIActivityTypeAssignToContact, UIActivityTypeMessage, UIActivityTypePrint, UIActivityTypeSaveToCameraRoll];
 
-	if (UI_USER_INTERFACE_IDIOM() != UIUserInterfaceIdiomPad) {
-		[self presentViewController:activityVC animated:YES completion:^{
-			//your completion here
-		}];
-	} else {
-		self.popover = [[UIPopoverController alloc] initWithContentViewController:activityVC];
-		[self.popover presentPopoverFromBarButtonItem:(UIBarButtonItem*)sender permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
-		
+	activityVC.modalPresentationStyle = UIModalPresentationPopover;
+	if([sender isKindOfClass:[UIView class]]) {
+		activityVC.popoverPresentationController.sourceView = ((UIView *)sender);
+		activityVC.popoverPresentationController.sourceRect = ((UIView *)sender).bounds;
+	} else if([sender isKindOfClass:[UIBarButtonItem class]]) {
+		activityVC.popoverPresentationController.barButtonItem = ((UIBarButtonItem *)sender);
+		activityVC.popoverPresentationController.permittedArrowDirections =  UIPopoverArrowDirectionAny;
 	}
+	
+	[self presentViewController:activityVC
+					   animated:YES
+					 completion:^{
+						 // your completion here
+						 NSLog(@"Share completed");
+					 }];
 	
 }
 
