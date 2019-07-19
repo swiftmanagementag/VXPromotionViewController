@@ -12,6 +12,7 @@
 @property (nonatomic, strong) NSString *affiliateCode;
 @property (nonatomic, strong) NSString *language;
 @property (nonatomic, strong) NSString *country;
+@property (assign) BOOL removeCurrentAppID;
 
 
 - (instancetype)initWithArrayOfAppIDs:(NSArray*)pApps;

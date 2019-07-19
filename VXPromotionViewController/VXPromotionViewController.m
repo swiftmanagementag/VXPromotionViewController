@@ -24,6 +24,7 @@
 
 
 @implementation VXPromotionViewController
+@synthesize removeCurrentAppID;
 
 #pragma mark - Initialization
 
@@ -31,6 +32,7 @@
 	self = [super init];
 	if (self) {
 		self.address = urlString;
+        self.removeCurrentAppID = true;
 	}
 	return self;
 }
@@ -39,6 +41,7 @@
 	self = [super init];
 	if (self) {
 		self.apps = [pApps mutableCopy];
+        self.removeCurrentAppID = true;
 	}
 	return self;
 }
@@ -118,7 +121,7 @@
 			NSString *appID = [NSString stringWithFormat:@"%@", app.productID ];
 			
 			// filter our your own app id
-			if(appID && (self.address == nil || self.appID == nil  || ![appID isEqualToString:self.appID])) {
+			if(appID && (self.address == nil || self.appID == nil  || !([appID isEqualToString:self.appID] && self.removeCurrentAppID))) {
 				// store app in cache
 				[self.appsLoaded setValue:app forKey:appID];
 				
