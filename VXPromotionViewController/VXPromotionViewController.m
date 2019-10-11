@@ -275,7 +275,8 @@
 	//[[UINavigationBar appearance] setTintColor:[UIColor darkTextColor]];
 	SKStoreProductViewController *controller = [[SKStoreProductViewController alloc] init];
 	controller.delegate = self;
-	
+    controller.modalPresentationStyle = UIModalPresentationFullScreen;
+                    
 	[controller loadProductWithParameters:@{SKStoreProductParameterITunesItemIdentifier:productID ?: @"", SKStoreProductParameterAffiliateToken:self.affiliateCode ?: @"", SKStoreProductParameterCampaignToken:self.appID ?: @""} completionBlock:^(BOOL result, NSError *error) {
 		if (error) {
 			NSLog(@"Error %@ with User Info %@.", error, [error userInfo]);
@@ -310,7 +311,8 @@
 	
 	SKStoreProductViewController *controller = [[SKStoreProductViewController alloc] init];
 	controller.delegate = self;
-	
+    controller.modalPresentationStyle = UIModalPresentationFullScreen;
+                    
 	[controller loadProductWithParameters:@{SKStoreProductParameterITunesItemIdentifier:self.appID} completionBlock:^(BOOL result, NSError *error) {
 		if (error) {
 			NSLog(@"Error %@ with User Info %@.", error, [error userInfo]);
