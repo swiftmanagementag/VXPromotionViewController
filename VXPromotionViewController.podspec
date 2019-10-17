@@ -1,4 +1,4 @@
-@version = "1.0.11"
+@version = "1.0.12"
 
 Pod::Spec.new do |s|
   s.name         	= 'VXPromotionViewController'
@@ -8,7 +8,7 @@ Pod::Spec.new do |s|
   s.license			= { :type => 'MIT', :file => 'LICENSE' }
   s.author       	= { 'Graham Lancashire' => 'lancashire@swift.ch' }
   s.source       	= { :git => 'https://github.com/swiftmanagementag/VXPromotionViewController.git', :tag => s.version.to_s }
-  s.platform     	= :ios, '7.0'
+  s.platform     	= :ios, '10.0'
   s.source_files 	= 'VXPromotionViewController/**/*.{h,m}'
   s.frameworks		= 'StoreKit', 'CoreImage'
   #s.resources 		= 'VXPromotionViewController/**/*.{bundle,xib,png,lproj}'

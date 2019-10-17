@@ -13,6 +13,9 @@ You can specify specific apps or load available apps for a publisher.
 
 ## Release notes
 
+### 1.0.12
+Minor fixes for iOS 13
+
 ### 1.0.11
 Removing current app from list is now configurable
 
